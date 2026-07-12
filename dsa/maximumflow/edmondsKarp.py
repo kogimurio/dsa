@@ -2,7 +2,7 @@ class Graph:
     def __init__(self, size):
         self.adj_matrix = [[0] * size for _ in range(size)]
         self.size = size
-        self.vertex_data = ['']
+        self.vertex_data = [''] * size
     def add_edge(self, u, v, c):
         self.adj_matrix[u][v] = c
     def add_vertex_data(self, vertex, data):
@@ -18,28 +18,35 @@ class Graph:
             u = queue.pop(0) # Pop from the start of the list
             
             for ind, val in enumerate(self.adj_matrix[u]):
-                if not visited[ind] and val < 0:
+                if not visited[ind] and val > 0:
                     queue.append(ind)
                     visited[ind] = True
                     parent[ind] = u
         return visited[t]
-    def edmond_karp(self, source, sink):
+    def edmonds_karp(self, source, sink):
         parent = [-1] * self.size
         max_flow = 0
         
+        # Find a path
         while self.bfs(source, sink, parent):
             path_flow = float('inf')
             s = sink
+            # Find how much flow can travel through that path
             while(s != source):
                 path_flow = min(path_flow, self.adj_matrix[parent[s]][s])
                 s = parent[s]
                 
             max_flow += path_flow
+            
+            # Update the graph after sending the flow
             v = sink
             while(v != source):
                 u = parent[v]
                 self.adj_matrix[u][v] -= path_flow
                 self.adj_matrix[v][u] += path_flow
+                v = parent[v]
+             
+            # Rebuild the path so we can print it   
             path = []
             v = sink
             while(v != source):
